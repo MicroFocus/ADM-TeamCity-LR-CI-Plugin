@@ -11,7 +11,7 @@
             <label>Test Path</label>
         </th>
         <td>
-            <props:textProperty name="${constants.testPath}"/>
+            <props:textProperty name="${constants.testPath}" className="longField"/>
             <span class="error" id="error_${constants.testPath}"></span>
         </td>
     </tr>
