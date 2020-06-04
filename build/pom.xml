@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>lrpPlugin</artifactId>
+    <groupId>com.lrpPlugin.teamcity.lrpPlugin</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>build</artifactId>
+  <packaging>pom</packaging>
+  <properties>
+      <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+      <teamcity.lrpPlugin.plugin.version>snapshot-${maven.build.timestamp}</teamcity.lrpPlugin.plugin.version>
+      <teamcity.lrpPlugin.plugin.vendorName>Plugin vendor name</teamcity.lrpPlugin.plugin.vendorName>
+      <teamcity.lrpPlugin.plugin.vendorUrl>Plugin vendor URL</teamcity.lrpPlugin.plugin.vendorUrl>
+  </properties>
+  <dependencies>
+      <dependency>
+           <groupId>com.lrpPlugin.teamcity.lrpPlugin</groupId>
+           <artifactId>lrpPlugin-agent</artifactId>
+           <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+           <groupId>com.lrpPlugin.teamcity.lrpPlugin</groupId>
+           <artifactId>lrpPlugin-common</artifactId>
+           <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+           <groupId>com.lrpPlugin.teamcity.lrpPlugin</groupId>
+           <artifactId>lrpPlugin-server</artifactId>
+           <version>1.0-SNAPSHOT</version>
+      </dependency>
+  </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-plugin-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.parent.artifactId}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <descriptors>
+                                <descriptor>src/assembly/plugin.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
