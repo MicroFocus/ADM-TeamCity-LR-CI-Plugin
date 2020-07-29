@@ -46,13 +46,46 @@ public class LrpRunType extends RunType {
                 return Collections.emptyList();
             }
 
-            List<InvalidProperty> errorList = new ArrayList<InvalidProperty>(0);
+            List<InvalidProperty> errorList = new ArrayList<InvalidProperty>();
             if (isEmptyOrNull(properties.get(LrpConstants.TEST_PATH))) {
                 errorList.add(new InvalidProperty(LrpConstants.TEST_PATH, LrpConstants.TEST_PATH_ERROR));
             }
-
+            if (isEmptyOrNull(properties.get(LrpConstants.RESULTS_PATH))) {
+                errorList.add(new InvalidProperty(LrpConstants.RESULTS_PATH, LrpConstants.RESULTS_PATH_ERROR));
+            }
+            if (isEmptyOrNull(properties.get(LrpConstants.CONTROLLER_POLLING_INTERVAL))) {
+                errorList.add(new InvalidProperty(LrpConstants.CONTROLLER_POLLING_INTERVAL,
+                        LrpConstants.getEmptyStringParameterErrorMsg("Controller Polling Interval")));
+            } else if(!isInteger(properties.get(LrpConstants.CONTROLLER_POLLING_INTERVAL))){
+                errorList.add(new InvalidProperty(LrpConstants.CONTROLLER_POLLING_INTERVAL,
+                        LrpConstants.getNonIntegerParameterErrorMsg("Controller Polling Interval")));
+            }
+            if (isEmptyOrNull(properties.get(LrpConstants.SCENARIO_EXECUTION_TIMEOUT))) {
+                errorList.add(new InvalidProperty(LrpConstants.SCENARIO_EXECUTION_TIMEOUT,
+                        LrpConstants.getEmptyStringParameterErrorMsg("Scenario Execution Timeout")));
+            } else if(!isInteger(properties.get(LrpConstants.SCENARIO_EXECUTION_TIMEOUT))){
+                errorList.add(new InvalidProperty(LrpConstants.SCENARIO_EXECUTION_TIMEOUT,
+                        LrpConstants.getNonIntegerParameterErrorMsg("Scenario Execution Timeout")));
+            }
+            if (isEmptyOrNull(properties.get(LrpConstants.TIMEOUT))) {
+                errorList.add(new InvalidProperty(LrpConstants.TIMEOUT,
+                        LrpConstants.getEmptyStringParameterErrorMsg("Timeout")));
+            } else if(!isInteger(properties.get(LrpConstants.TIMEOUT))){
+                errorList.add(new InvalidProperty(LrpConstants.TIMEOUT,
+                        LrpConstants.getNonIntegerParameterErrorMsg("Timeout")));
+            }
             return errorList;
         };
+    }
+
+    public boolean isInteger(String value){
+        if(value == null) return false;
+        try{
+            Integer.parseInt(value);
+        } catch(NumberFormatException exception){
+            return false;
+        }
+        return true;
     }
 
     @Nullable

@@ -15,7 +15,7 @@ import java.util.*;
 public class LrpService extends BuildServiceAdapter {
     private final ArtifactsWatcher _ArtifactsWatcher;
 
-    private String _UniqueId;
+    private String _UniqueId, resultsPath;
 
     public LrpService(final ArtifactsWatcher artifactsWatcher) {
         _ArtifactsWatcher = artifactsWatcher;
@@ -25,14 +25,18 @@ public class LrpService extends BuildServiceAdapter {
     {
         Properties propertyList = new Properties();
         propertyList.setProperty("Test1", getRunnerParameters().get(LrpConstants.TEST_PATH));
-        propertyList.setProperty("controllerPollingInterval", "30");
-        propertyList.setProperty("PerScenarioTimeOut", "10");
-        propertyList.setProperty("analysisTemplate", "");
-        propertyList.setProperty("displayController", "1");
+        propertyList.setProperty("controllerPollingInterval", getRunnerParameters().get(
+                LrpConstants.CONTROLLER_POLLING_INTERVAL));
+        propertyList.setProperty("PerScenarioTimeOut", getRunnerParameters().get(LrpConstants.SCENARIO_EXECUTION_TIMEOUT));
+        propertyList.setProperty("analysisTemplate", getRunnerParameters().getOrDefault(LrpConstants.ANALYSIS_TEMPLATE, ""));
+        propertyList.setProperty("displayController", "0");
         propertyList.setProperty("runType", "FileSystem");
-        propertyList.setProperty("fsTimeout", "-1");
-        propertyList.setProperty("resultsFilename", getWorkingDirectory().getAbsolutePath() + "\\Report" + _UniqueId + ".xml");
-        propertyList.put("fsReportPath", getWorkingDirectory().getAbsolutePath() + "\\" + _UniqueId);
+        propertyList.setProperty("fsTimeout", getRunnerParameters().get(LrpConstants.TIMEOUT));
+
+        resultsPath = getRunnerParameters().get(LrpConstants.RESULTS_PATH) + "\\Build-" + _UniqueId;
+        propertyList.setProperty("resultsFilename", resultsPath + "\\Report.xml");
+        // propertyList.setProperty("resultsFilename", getWorkingDirectory().getAbsolutePath() + "\\Report" + _UniqueId + ".xml");
+        propertyList.put("fsReportPath", resultsPath);
 
         return propertyList;
     }
@@ -65,7 +69,7 @@ public class LrpService extends BuildServiceAdapter {
     @NotNull
     @Override
     public void afterProcessFinished() throws RunBuildException {
-        _ArtifactsWatcher.addNewArtifactsPath(_UniqueId + "\\**/* => " + LrpConstants.REPORT_DIRECTORY);
+        _ArtifactsWatcher.addNewArtifactsPath(resultsPath + "\\**/* => " + LrpConstants.REPORT_DIRECTORY);
     }
 
     private List<String> getArguments() {
