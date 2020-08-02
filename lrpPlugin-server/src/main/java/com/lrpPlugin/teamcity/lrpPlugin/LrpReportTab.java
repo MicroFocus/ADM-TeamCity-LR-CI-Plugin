@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class LrpReportTab extends BuildTab {
     protected LrpReportTab(WebControllerManager manager, BuildsManager buildManager, PluginDescriptor descriptor) {
-        super("lrpReportTab", "Report Tab", manager, buildManager, "");
+        super("lrpReportTab", "LoadRunner Report Tab", manager, buildManager, "");
         setIncludeUrl("/artifactsViewer.jsp");
         setPosition(PositionConstraint.after("artifacts"));
     }

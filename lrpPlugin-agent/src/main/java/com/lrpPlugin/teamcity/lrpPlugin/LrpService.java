@@ -83,7 +83,6 @@ public class LrpService extends BuildServiceAdapter {
 
     private String getParamFilePath() {
         String workingDirectory = getWorkingDirectory().getAbsolutePath();
-
         return workingDirectory + "\\props"+ _UniqueId+ ".txt";
     }
 

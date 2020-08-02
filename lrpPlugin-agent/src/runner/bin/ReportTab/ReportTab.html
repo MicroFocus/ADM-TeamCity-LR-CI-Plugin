@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<html><head>
+
+<link rel="stylesheet" type="text/css" href="ReportTab.css">
+<script type="text/javascript" src="ReportTab.js"></script>
+<title>LoadRunner Report Tab</title>
+</head>
+
+<div class="SelectScenarioDiv">
+	<select id="SelectScenario" onchange="changeScenarioSourcePath()">
+		<option value="" selected disabled hidden>Choose your scenario</option>
+		<option value="../Scenario1/HTML/IE/HTML.html">Scenario1</option>
+		<option value="../Scenario2/HTML/IE/HTML.html">Scenario2</option>
+	</select>
+</div>
+<div class="LrAnalysisReportDiv">
+	<iframe id="ScenarioLrAnalysisReport" src="" hidden></iframe>
+</div>
+
+</html>
