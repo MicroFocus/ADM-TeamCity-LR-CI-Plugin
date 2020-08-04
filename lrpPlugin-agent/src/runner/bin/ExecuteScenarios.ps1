@@ -11,6 +11,7 @@ function getPropertiesFileContent {
 
     $scenarioPath = $scenarioPath.replace("\", "\\");
     $scenarioResultsPath = $scenarioResultsPath.replace("\", "\\");
+    $analysisTemplate = $analysisTemplate.replace("\", "\\");
     $content = "Test1=$scenarioPath`n";
     $content += "fsReportPath=$scenarioResultsPath`n";
     $content += "resultsFilename=$scenarioResultsPath\\Report.xml`n";
@@ -163,8 +164,9 @@ function createReportTab {
 }
 
 $scenarioFailures = 0;
-[string[]]$scenarioNames = getAllScenarioNames -sourcePath $sourcePath;
+$summaryMessages = [System.Collections.ArrayList]@();
 
+[string[]]$scenarioNames = getAllScenarioNames -sourcePath $sourcePath;
 $scenarioSourceDirectory = getScenariosSourceDirectory -sourcePath $sourcePath;
 
 ForEach($scenarioName in $scenarioNames){
@@ -173,10 +175,13 @@ ForEach($scenarioName in $scenarioNames){
     executeScenario -scenarioName "$scenarioName" `
         -scenarioSourceDirectory "$scenarioSourceDirectory" `
         -scenarioResultsPath "$scenarioResultsPath"
-
+    
     $scenarioPassed = getScenarioStatus -scenarioResultsPath "$scenarioResultsPath";
     if(-not $scenarioPassed){
         $scenarioFailures ++;
+        $summaryMessages.Add("$scenarioName has failed!");
+    } else{
+        $summaryMessages.Add("$scenarioName has passed!");
     }
 }
 
@@ -184,4 +189,11 @@ $targetPath = "$resultsPath\$buildIdentifier";
 
 createReportTab -targetPath "$targetPath" -scenarioNames $scenarioNames;
 
+Write-Host "LoadRunner Build Step Summary";
+ForEach($summaryMsg in $summaryMessages){
+    Write-Host $summaryMsg;
+}
+if($scenarioFailures -ne 0){
+    Write-Host "Build step is going to be marked as failed!";
+}
 exit $scenarioFailures
