@@ -157,8 +157,8 @@ function createReportTab {
         insertOptionsIntoRaport -reportHtmlPath "$reportHtmlPath" `
             -scenarionOptions "$scenarioOptionsHtml";
     } else {
-        Write-Error "Path '$targetPath' doesn't exist!";
-        Write-Error "There was an error during the execution of the plugin";
+        Write-Host "Path '$targetPath' doesn't exist!";
+        Write-Host "There was an error during the execution of the plugin";
         exit 1;
     }
 }
@@ -179,9 +179,9 @@ ForEach($scenarioName in $scenarioNames){
     $scenarioPassed = getScenarioStatus -scenarioResultsPath "$scenarioResultsPath";
     if(-not $scenarioPassed){
         $scenarioFailures ++;
-        $summaryMessages.Add("$scenarioName has failed!");
+        $summaryMessages.Add("$scenarioName has failed!") | Out-Null;
     } else{
-        $summaryMessages.Add("$scenarioName has passed!");
+        $summaryMessages.Add("$scenarioName has passed!") | Out-Null;
     }
 }
 
