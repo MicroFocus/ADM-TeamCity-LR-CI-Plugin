@@ -15,67 +15,53 @@ import java.util.*;
 public class LrpService extends BuildServiceAdapter {
     private final ArtifactsWatcher _ArtifactsWatcher;
 
-    private String _UniqueId, resultsPath;
+    private String _UniqueId, _ResultsPath, _BuildIdentifier;
 
     public LrpService(final ArtifactsWatcher artifactsWatcher) {
         _ArtifactsWatcher = artifactsWatcher;
     }
 
-    private Properties getPropertyList()
-    {
-        Properties propertyList = new Properties();
-        propertyList.setProperty("Test1", getRunnerParameters().get(LrpConstants.TEST_PATH));
-        propertyList.setProperty("controllerPollingInterval", getRunnerParameters().get(
-                LrpConstants.CONTROLLER_POLLING_INTERVAL));
-        propertyList.setProperty("PerScenarioTimeOut", getRunnerParameters().get(LrpConstants.SCENARIO_EXECUTION_TIMEOUT));
-        propertyList.setProperty("analysisTemplate", getRunnerParameters().getOrDefault(LrpConstants.ANALYSIS_TEMPLATE, ""));
-        propertyList.setProperty("displayController", "0");
-        propertyList.setProperty("runType", "FileSystem");
-        propertyList.setProperty("fsTimeout", getRunnerParameters().get(LrpConstants.TIMEOUT));
-
-        resultsPath = getRunnerParameters().get(LrpConstants.RESULTS_PATH) + "\\Build-" + _UniqueId;
-        propertyList.setProperty("resultsFilename", resultsPath + "\\Report.xml");
-        // propertyList.setProperty("resultsFilename", getWorkingDirectory().getAbsolutePath() + "\\Report" + _UniqueId + ".xml");
-        propertyList.put("fsReportPath", resultsPath);
-
-        return propertyList;
-    }
-
-    private void createPropertyFile(String filePath) {
-        try (OutputStream output = new FileOutputStream(filePath)) {
-            Properties prop = getPropertyList();
-            prop.store(output, null);
-        } catch (IOException e) {
-            getBuild().getBuildLogger().message("An error occurred: " + e.getMessage());
-        }
-    }
-
     @NotNull
     @Override
     public ProgramCommandLine makeProgramCommandLine() throws RunBuildException {
-        Date now = new Date();
-        Format formatter = new SimpleDateFormat("ddMMyyyyHHmmssSSS");
-        _UniqueId = formatter.format(now);
-
-        createPropertyFile(getParamFilePath());
+        _UniqueId = String.valueOf(getBuild().getBuildId());
+        _BuildIdentifier = "Build-" + _UniqueId;
+        _ResultsPath = getRunnerParameters().get(LrpConstants.RESULTS_PATH) + "\\" + _BuildIdentifier;
 
         return new SimpleProgramCommandLine(
                 getBuildParameters().getEnvironmentVariables(),
                 getLrpPluginRunnerBin(),
-                getLrpPluginRunnerBin() + "\\HpToolsLauncher.exe",
+                "powershell.exe",
                 getArguments());
     }
 
     @NotNull
     @Override
     public void afterProcessFinished() throws RunBuildException {
-        _ArtifactsWatcher.addNewArtifactsPath(resultsPath + "\\**/* => " + LrpConstants.REPORT_DIRECTORY);
+        _ArtifactsWatcher.addNewArtifactsPath(
+                _ResultsPath + "\\**/* => " + LrpConstants.REPORT_DIRECTORY
+        );
     }
 
     private List<String> getArguments() {
         List<String> arguments = new ArrayList<>();
 
-        arguments.add("-paramfile");
+        arguments.add(getLrpPluginRunnerBin() + "\\ExecuteScenarios.ps1");
+        arguments.add("-sourcePath");
+        arguments.add(getRunnerParameters().get(LrpConstants.TEST_PATH));
+        arguments.add("-resultsPath");
+        arguments.add(getRunnerParameters().get(LrpConstants.RESULTS_PATH));
+        arguments.add("-controllerPollingInterval");
+        arguments.add(getRunnerParameters().get(LrpConstants.CONTROLLER_POLLING_INTERVAL));
+        arguments.add("-buildIdentifier");
+        arguments.add(_BuildIdentifier);
+        arguments.add("-scenarioExecutionTimeout");
+        arguments.add(getRunnerParameters().get(LrpConstants.SCENARIO_EXECUTION_TIMEOUT));
+        arguments.add("-analysisTemplate");
+        arguments.add(getRunnerParameters().getOrDefault(LrpConstants.ANALYSIS_TEMPLATE, "''"));
+        arguments.add("-timeout");
+        arguments.add(getRunnerParameters().get(LrpConstants.TIMEOUT));
+        arguments.add("-propertiesFile");
         arguments.add(getParamFilePath());
 
         return arguments;

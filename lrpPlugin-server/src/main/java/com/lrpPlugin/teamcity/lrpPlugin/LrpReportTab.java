@@ -25,7 +25,7 @@ public class LrpReportTab extends BuildTab {
     }
 
     private String getHtmlReportPath(SBuild sBuild) {
-        String htmlReportPath = LrpConstants.REPORT_DIRECTORY + "\\HTML\\IE\\HTML.html";
+        String htmlReportPath = LrpConstants.REPORT_DIRECTORY + "\\ReportTab\\ReportTab.html";
         BuildArtifact artifact = sBuild.getArtifacts(BuildArtifactsViewMode.VIEW_ALL).getArtifact(htmlReportPath);
 
         return artifact != null ? artifact.getRelativePath() : "HTML.html";

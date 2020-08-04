@@ -9,15 +9,17 @@ function getPropertiesFileContent {
     
     param([string]$scenarioPath, [string]$scenarioResultsPath)
 
+    $scenarioPath = $scenarioPath.replace("\", "\\");
+    $scenarioResultsPath = $scenarioResultsPath.replace("\", "\\");
     $content = "Test1=$scenarioPath`n";
-    $content = "fsReportPath=$scenarioResultsPath`n";
-    $content = "resultsFilename=$scenarioResultsPath\\Report.xml`n";
-    $content = "PerScenarioTimeOut=$scenarioExecutionTimeout`n";
-    $content = "analysisTemplate=$analysisTemplate`n";
-    $content = "runType=$FileSystem`n";
-    $content = "fsTimeout=$timeout`n";
-    $content = "displayController=0`n";
-    $content = "controllerPollingInterval=$controllerPollingInterval`n";
+    $content += "fsReportPath=$scenarioResultsPath`n";
+    $content += "resultsFilename=$scenarioResultsPath\\Report.xml`n";
+    $content += "PerScenarioTimeOut=$scenarioExecutionTimeout`n";
+    $content += "analysisTemplate=$analysisTemplate`n";
+    $content += "runType=FileSystem`n";
+    $content += "fsTimeout=$timeout`n";
+    $content += "displayController=0`n";
+    $content += "controllerPollingInterval=$controllerPollingInterval`n";
 
     return $content;
 }
@@ -57,11 +59,12 @@ function getAllScenarioNames {
     
     param([string]$sourcePath)
 
-    $scenarioNames = "";
     if("$sourcePath" -match ".*\.lrs"){
         return $sourcePath.replace(".lrs", "").split("\")[-1];
     }
-    return getAllScenarioNamesFromDirectory -sourcePath "$sourcePath"
+    $scenarioNames = getAllScenarioNamesFromDirectory `
+        -sourcePath "$sourcePath";
+    return $scenarioNames.split("`n");
 }
 
 function getScenariosSourceDirectory {
@@ -80,27 +83,105 @@ function getScenariosSourceDirectory {
     }
 }
 
-function executeScenario {
+function getScenarioStatus {
     
-    param([string]$scenarioName, [string]$scenarioSourceDirectory)
+    param([string]$scenarioResultsPath)
+    
+    $passedScenarioMsg = "Test result: Passed";
 
-    $scenarioPath = "$scenarioSourceDirectory\$scenarioName.lrs"
-    $scenarioResultsPath = "$resultsPath\$buildIdentifier\$scenarioName";
-    createPropertiesFile -scenarioPath "$scenarioPath" `
-        -scenarioResultsPath "$scenarioResultsPath" 
-    
-    .\HpToolsLauncher.exe -paramfile "$propertiesFile"
-    return $LASTEXITCODE;
+    $scenarioReportPath = "$scenarioResultsPath\Report.xml";
+    if(Test-Path -Path "$scenarioReportPath"){
+         $reportContent = Get-Content -Path "$scenarioReportPath";
+         return $reportContent.contains("$passedScenarioMsg");
+    } else {
+        Write-Host "Path: '$scenarioResultsPath' does not exist!";
+        return $false;
+    }
+    return $true;
 }
 
-$sourcePath = "C:\Scenarios-Multiple2";
+function executeScenario {
+    
+    param([string]$scenarioName, [string]$scenarioSourceDirectory, [string]$scenarioResultsPath)
 
-$scenarioNames = getAllScenarioNames -sourcePath $sourcePath;
+    $scenarioPath = "$scenarioSourceDirectory\$scenarioName.lrs";
+    
+    createPropertiesFile -scenarioPath "$scenarioPath" `
+        -scenarioResultsPath "$scenarioResultsPath";
+    
+    .\HpToolsLauncher.exe -paramfile "$propertiesFile";
+}
+
+function formatScenarioOptionForReportHtml{
+    
+    param([string]$scenarioName)
+
+    $optionFormat = '<option value="../{0}/HTML/IE/HTML.html">{0}</option>';
+    return “$optionFormat” –f "$scenarioName";
+}
+
+function getScenarioOptionsForReportHtml{
+    
+    param([string[]]$scenarioNames)
+
+    $scenarioOptions = "";
+    ForEach($scenarioName in $scenarioNames){
+        $scenarioOption = formatScenarioOptionForReportHtml `
+            -scenarioName "$scenarioName";
+        $scenarioOptions += "$scenarioOption`n";
+    }
+    return "$scenarioOptions"
+}
+
+function insertOptionsIntoRaport{
+
+    param([string]$reportHtmlPath, [string]$scenarionOptions)
+
+    $insertLineTag = "<!-- Insert Line-->"
+    (Get-Content "$reportHtmlPath") `
+        -replace "$insertLineTag", "$scenarionOptions" | `
+        Set-Content "$reportHtmlPath"
+}
+
+function createReportTab {
+
+    param([string]$targetPath, [string[]]$scenarioNames)
+
+    if(Test-Path -Path "$targetPath"){
+        Copy-Item -Path ".\ReportTab" `
+            -Destination "$targetPath\" -Recurse -Force
+        $scenarioOptionsHtml = getScenarioOptionsForReportHtml `
+            -scenarioNames $scenarioNames;
+        $reportHtmlPath = "$targetPath\ReportTab\ReportTab.html";
+        insertOptionsIntoRaport -reportHtmlPath "$reportHtmlPath" `
+            -scenarionOptions "$scenarioOptionsHtml";
+    } else {
+        Write-Error "Path '$targetPath' doesn't exist!";
+        Write-Error "There was an error during the execution of the plugin";
+        exit 1;
+    }
+}
+
+$scenarioFailures = 0;
+[string[]]$scenarioNames = getAllScenarioNames -sourcePath $sourcePath;
 
 $scenarioSourceDirectory = getScenariosSourceDirectory -sourcePath $sourcePath;
 
 ForEach($scenarioName in $scenarioNames){
-    write-host "$scenarioName";
+    $scenarioResultsPath = "$resultsPath\$buildIdentifier\$scenarioName";
 
+    executeScenario -scenarioName "$scenarioName" `
+        -scenarioSourceDirectory "$scenarioSourceDirectory" `
+        -scenarioResultsPath "$scenarioResultsPath"
+
+    $scenarioPassed = getScenarioStatus -scenarioResultsPath "$scenarioResultsPath";
+    if(-not $scenarioPassed){
+        $scenarioFailures ++;
+    }
 }
 
+$targetPath = "$resultsPath\$buildIdentifier";
+
+createReportTab -targetPath "$targetPath" -scenarioNames $scenarioNames;
+
+exit $scenarioFailures
