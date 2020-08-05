@@ -61,7 +61,7 @@ public class LrpService extends BuildServiceAdapter {
         arguments.add("-scenarioExecutionTimeout");
         arguments.add(getRunnerParameters().get(LrpConstants.SCENARIO_EXECUTION_TIMEOUT));
         arguments.add("-analysisTemplate");
-        arguments.add(getRunnerParameters().getOrDefault(LrpConstants.ANALYSIS_TEMPLATE, "''"));
+        arguments.add(getRunnerParameters().getOrDefault(LrpConstants.ANALYSIS_TEMPLATE, "\"\""));
         arguments.add("-timeout");
         arguments.add(getRunnerParameters().get(LrpConstants.TIMEOUT));
         arguments.add("-propertiesFile");
