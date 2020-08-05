@@ -123,13 +123,16 @@ function formatScenarioOptionForReportHtml{
 
 function getScenarioOptionsForReportHtml{
     
-    param([string[]]$scenarioNames)
+    param([string[]]$scenarioNames, [string]$targetPath)
 
     $scenarioOptions = "";
     ForEach($scenarioName in $scenarioNames){
-        $scenarioOption = formatScenarioOptionForReportHtml `
-            -scenarioName "$scenarioName";
-        $scenarioOptions += "$scenarioOption`n";
+        $scenarioHtmlPath = "$targetPath\$scenarioName\HTML\IE\HTML.html";
+        if(Test-Path -Path "$scenarioHtmlPath"){
+            $scenarioOption = formatScenarioOptionForReportHtml `
+                -scenarioName "$scenarioName";
+            $scenarioOptions += "$scenarioOption`n";
+        }
     }
     return "$scenarioOptions"
 }
@@ -152,7 +155,7 @@ function createReportTab {
         Copy-Item -Path ".\ReportTab" `
             -Destination "$targetPath\" -Recurse -Force
         $scenarioOptionsHtml = getScenarioOptionsForReportHtml `
-            -scenarioNames $scenarioNames;
+            -scenarioNames $scenarioNames -targetPath "$targetPath";
         $reportHtmlPath = "$targetPath\ReportTab\ReportTab.html";
         insertOptionsIntoRaport -reportHtmlPath "$reportHtmlPath" `
             -scenarionOptions "$scenarioOptionsHtml";

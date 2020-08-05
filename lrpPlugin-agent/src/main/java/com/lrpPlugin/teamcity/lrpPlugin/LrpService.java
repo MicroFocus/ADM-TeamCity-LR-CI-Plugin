@@ -46,6 +46,9 @@ public class LrpService extends BuildServiceAdapter {
     private List<String> getArguments() {
         List<String> arguments = new ArrayList<>();
 
+        arguments.add("-ExecutionPolicy");
+        arguments.add("Bypass");
+        arguments.add("-File");
         arguments.add(getLrpPluginRunnerBin() + "\\ExecuteScenarios.ps1");
         arguments.add("-sourcePath");
         arguments.add(getRunnerParameters().get(LrpConstants.TEST_PATH));
