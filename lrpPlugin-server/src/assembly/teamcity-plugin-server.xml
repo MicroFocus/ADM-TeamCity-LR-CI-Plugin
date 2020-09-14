@@ -3,14 +3,14 @@
     <info>
         <name>LoadRunner Professional</name>
         <display-name>LoadRunner Professional</display-name>
-        <version>@Version@</version>
-        <description>Allows to run load tests using LoadRunner Professional</description>
+        <version>1.0.0</version>
+        <description>The LoadRunner Professional plugin for the TeamCity provides a mechanism for executing Controller scenarios as part of a build configuration. This plugin allows you to trigger a performance test as a build step and view the results in TeamCity reports.</description>
         <download-url>Plugin download URL</download-url>
-        <email>Plugin author e-mail</email>
+        <email>paul-adrian.tofan@microfocus.com</email>
         <vendor>
-            <name>MicroFocus</name>
-            <url>@VendorURL@</url>
-            <logo>Plugin vendor logo URL</logo>
+            <name>Micro Focus</name>
+            <url>https://www.microfocus.com/en-us/products/loadrunner-professional/overview</url>
+            <logo>https://github.com/MicroFocus/ADM-TeamCity-LR-CI-Plugin/blob/master/images/LoadRunner.png</logo>
         </vendor>
     </info>
     <deployment use-separate-classloader="true"/>
